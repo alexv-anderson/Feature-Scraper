@@ -20,6 +20,11 @@ class FeaturePipeline(object):
         with open("./config.json", "r") as f:
             self._json_data = json.load(f)
 
+    def _drop_and_log(self, pipeline_name, reason):
+        message = "%s dropped a %s because the %s feature %s." % pipeline_name, self._pipeline_type, feature_name, reason
+        logging.log(logging.WARNING, message)
+        raise DropItem(message)
+
 class SingleFeaturePipeline(FeaturePipeline):
     """Parent of all feature pipelines which only know how to operate on one type of item"""
 
@@ -83,21 +88,13 @@ class ContentPipeline(SingleFeaturePipeline):
         # If this feature has no regulare expression data, then throw the data out.
         # TODO: Should we keep doing this?
         if regex_data is None:
-            message = "ContentPipeline dropped a %s because the %s content feature has not regex data." % self._pipeline_type, feature_name
-            logging.log(logging.WARNING, message)
-            raise DropItem(message)
+            self._drop_and_log("ContentPipeline", "has not regex data")
 
         # If the regular expression is a valid mode and doesn't match, then throw the data out.
         if "mode" in regex_data and regex_data["mode"] in ["match", "search"]:
-            logging.log(logging.WARNING, "Mode = %s" % regex_data["mode"])
             if regex_data["mode"] == "match" and re.match(regex_data["regex"], item["content"]) is None:
-                raise DropItem("Content did not MATCH regex for %s" % item["feature_name"])
+                self._drop_and_log("ContentPipeline", "content did not MATCH regex %s" % item["regex"])
             elif regex_data["mode"] == "search" and re.search(regex_data["regex"], item["content"]) is None:
-                raise DropItem("Content SEARCH for %s was not successful" % item["feature_name"])
+                self._drop_and_log("ContentPipeline", "content SEARCH could not find match for regex %s" % item["regex"])
         else:
-            message = "ContentPipeline dropped a %s because the %s content feature has an incorrect mode. Expected either 'match' or 'search'." % self._pipeline_type, feature_name
-            logging.log(logging.WARNING, message)
-            raise DropItem(message)
-
-        
-
+            self._drop_and_log("ContentPipeline", "has an incorrect mode. Expected either 'match' or 'search'.")
