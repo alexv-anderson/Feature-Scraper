@@ -2,7 +2,7 @@
     "content_features": {
         "Get stuff": {
             "tag": "p",
-            "regex": "*",
+            "regex": ".",
             "mode": "match"
         }
     },

@@ -64,7 +64,7 @@ class SingleFeaturePipeline(FeaturePipeline):
 
 class ContentPipeline(SingleFeaturePipeline):
     def __init__(self):
-        FilterFeaturePipeline.__init__(self, ContentItem)
+        SingleFeaturePipeline.__init__(self, ContentItem)
 
         # Build data needed for each feature's regular expression
         self.feature_regex_data = {}
@@ -76,19 +76,28 @@ class ContentPipeline(SingleFeaturePipeline):
             }
 
     def on_item(self, item, spider):
+        feature_name = item["feature_name"]
         # Load regular expression data for the feature which created this item
-        regex_data = self.feature_regex_data[item["feature_name"]]
+        regex_data = self.feature_regex_data[feature_name]
 
         # If this feature has no regulare expression data, then throw the data out.
         # TODO: Should we keep doing this?
         if regex_data is None:
-            raise DropItem("No content regex data for %s" % item["feature_name"])
+            message = "ContentPipeline dropped a %s because the %s content feature has not regex data." % self._pipeline_type, feature_name
+            logging.log(logging.WARNING, message)
+            raise DropItem(message)
 
         # If the regular expression is a valid mode and doesn't match, then throw the data out.
-        if regex_data["mode"] is "match" and re.match(regex_data["regex"], item["content"]) is None:
-            raise DropItem("Content did not MATCH regex for %s" % item["feature_name"])
-        elif regex_data["mode"] is "search" and re.search(regex_data["regex"], item["content"]) is None:
-            raise DropItem("Content SEARCH for %s was not successful" % item["feature_name"])
+        if "mode" in regex_data and regex_data["mode"] in ["match", "search"]:
+            logging.log(logging.WARNING, "Mode = %s" % regex_data["mode"])
+            if regex_data["mode"] == "match" and re.match(regex_data["regex"], item["content"]) is None:
+                raise DropItem("Content did not MATCH regex for %s" % item["feature_name"])
+            elif regex_data["mode"] == "search" and re.search(regex_data["regex"], item["content"]) is None:
+                raise DropItem("Content SEARCH for %s was not successful" % item["feature_name"])
+        else:
+            message = "ContentPipeline dropped a %s because the %s content feature has an incorrect mode. Expected either 'match' or 'search'." % self._pipeline_type, feature_name
+            logging.log(logging.WARNING, message)
+            raise DropItem(message)
 
         
 
