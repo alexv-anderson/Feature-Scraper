@@ -2,7 +2,7 @@ import scrapy
 import csv
 import json
 
-from features.items import ContentItem
+from features.items import ContentItem, CustomItem
 
 class FeatureSpider(scrapy.Spider):
     name = "feature-spider"
@@ -25,11 +25,21 @@ class FeatureSpider(scrapy.Spider):
     def parse(self, response):
         for feature_name in self._json_data["content_features"]:
             content_feature = self._json_data["content_features"][feature_name]
-            for div in response.xpath('//{0}'.format(content_feature["tag"])):
-                for content in div.xpath("text()").getall():
+            for selector in response.xpath('//{0}'.format(content_feature["tag"])):
+                for content in selector.xpath("text()").getall():
                     yield ContentItem({
+                        "feature_type": "content",
                         "feature_name": feature_name,
                         "tag": content_feature["tag"],
                         "content": content
                     })
-                # "content": div.xpath("text()").extract_first()
+
+        for feature_name in self._json_data["custom_features"]:
+            custom_feature = self._json_data["custom_features"][feature_name]
+            for selector in response.xpath(custom_feature["xpath_expr"]):
+                for selected in selector.getall():
+                    yield CustomItem({
+                        "feature_type": "custom",
+                        "feature_name": feature_name,
+                        "content": selected
+                    })

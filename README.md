@@ -45,3 +45,17 @@ The crawler can be configured to extract content from a webpage by adding an obj
 - The `"tag"` property tells the crawler the `HTML` tags whose content should be searched for the `"regex"`.
 - The `"regex"` property is used to supply the crawler with a regular expression which the content of the specified `"tag"` must meet to be included in the results.
 - The `"mode"` property is used to control how the `"regex"` is applied to the content of the `"tag"`. The supported modes are `"match"` and `"search"`. Please reference the [Python 3 re module documentation](https://docs.python.org/3/library/re.html) for the differences
+
+#### Custom
+Custom feature extractors can be added to the crawler for situations which can't be satisfied with existing extractors by adding members to the `custom_features` property.
+```json
+{
+    "custom_features": {
+        "title": {
+            "xpath_expr": "//title"
+        }
+    }
+}
+```
+- The identifier of this custom feature is `"title"` and will be used by the crawler to uniquely identify the feature during runtime and in the crawler's output.
+- The `"xpath_expr"` is an [XPath](https://docs.scrapy.org/en/latest/topics/selectors.html#working-with-xpaths) expression which is used to extract content from a page for the feature.

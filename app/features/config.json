@@ -5,5 +5,10 @@
             "regex": "*",
             "mode": "match"
         }
+    },
+    "custom_features": {
+        "title": {
+            "xpath_expr": "//title"
+        }
     }
 }

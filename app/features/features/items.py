@@ -7,8 +7,14 @@
 
 import scrapy
 
+class FeatureItem(scrapy.Item):
+    feature_type = scrapy.Field()
 
-class ContentItem(scrapy.Item):
+class ContentItem(FeatureItem):
     feature_name = scrapy.Field()
     tag = scrapy.Field()
+    content = scrapy.Field()
+
+class CustomItem(FeatureItem):
+    feature_name = scrapy.Field()
     content = scrapy.Field()
