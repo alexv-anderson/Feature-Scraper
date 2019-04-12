@@ -5,4 +5,3 @@ cd "app"
 source ./bin/activate
 pip install wheel
 pip install scrapy
-cp -r ../features .

@@ -2,16 +2,14 @@
 
 Scraper designed to extract features of interest from webpages.
 
-## Repo Setup and Management
+## Install/Setup
+In a Linux environment with Python 3 installed simply run `./setup.bash` and a virtual python environment will be created and launached from the `app`. If the script is giving an error or for instructions to install in a Windows environment, then please consult the [Scrapy installation instructions](https://docs.scrapy.org/en/latest/intro/install.html).
 
-### Install/Setup
-In a Linux environment with Python 3 installed simply run `./setup.bash` and an `app` directory will be created and a virtual python environment launched. If the script is giving an error or for instruction to install in a Windows environment, then please consult the [Scrapy installation instructions](https://docs.scrapy.org/en/latest/intro/install.html).
-
-## Running the Crawler
+## Running a Generic Crawler
 
 ### Using the Virtual Environment
 
-Python 3 provides a built-in module for creating isolated development environments [venv](https://docs.python.org/3/library/venv.html). We will use this module to manage the project's dependencies. To launch the virtual environment navigate to the `app` directory then execute `source ./bin/activate`. To exit the virtual environment simply enter the `deactivate` command.
+Python 3 provides a built-in module for creating isolated development environments: [venv](https://docs.python.org/3/library/venv.html). We will use this module to manage the project's dependencies. To launch the virtual environment navigate to the `app` directory then execute `source ./bin/activate`. To exit the virtual environment simply enter the `deactivate` command.
 
 ### Running a Crawler
 
@@ -21,17 +19,16 @@ To run a crawler:
 1. Navigate to the `app/features` directory and execute `scrapy list` to see the list of crawlers available to run.
 1. Run a crawler by executing `scrapy crawl <name-of-crawler>`
 
-### Controlling the Feature Crawler
+## Running the Feature Crawler
 
-The feature crawler is controlled by two files:
+The feature crawler has two primary stages. The first is the spider which sends requests to `URLs` and parses the raw data from the response. The second stage is a pipeline which process the data extracted from the spider and prepares it of output. The behavior of these stages is primarily controlled through two files: `app/features/urls.csv` and `app/features/config.json`.
 
-#### Controlling Where to Scrape with `app/features/urls.csv`
+### Controlling Where to Scrape with `app/features/urls.csv`
 This file contains a single column with a header of `url` which contains the `url` to be scraped.
-- `app/features/config.json`: This file contains a description of the features for which the crawler will look.
 
-#### Controlling What is Extracted with `app/features/config.json`
+### Controlling What is Extracted with `app/features/config.json`
 
-##### Content
+#### Content
 The crawler can be configured to extract content from a webpage by adding an object to `content_features`. An example of a content feature is shown below:
 ```json
 {
