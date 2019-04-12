@@ -2,6 +2,7 @@
 .vscode/
 
 # Runtime environment
-app/
+app/*
+!app/features
 
 *.pyc
