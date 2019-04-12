@@ -51,6 +51,8 @@ class ContentPipeline(FilterFeaturePipeline):
 
         if regex_data["mode"] is "match" and re.match(regex_data["regex"], item["content"]) is None:
             raise DropItem("Content did not MATCH regex for %s" % item["feature_name"])
+        elif regex_data["mode"] is "search" and re.search(regex_data["regex"], item["content"]) is None:
+            raise DropItem("Content SEARCH for %s was not successful" % item["feature_name"])
 
         
 
