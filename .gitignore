@@ -1,0 +1,7 @@
+# VS Code
+.vscode/
+
+# Runtime environment
+app/
+
+*.pyc

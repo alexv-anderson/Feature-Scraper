@@ -1,0 +1,9 @@
+{
+    "content_features": {
+        "Get stuff": {
+            "tag": "p",
+            "regex": "*",
+            "mode": "match"
+        }
+    }
+}
