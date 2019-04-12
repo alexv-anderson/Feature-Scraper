@@ -5,6 +5,11 @@ Scraper designed to extract features of interest from webpages.
 ## Install/Setup
 In a Linux environment with Python 3 installed simply run `./setup.bash` and a virtual python environment will be created and launached from the `app`. If the script is giving an error or for instructions to install in a Windows environment, then please consult the [Scrapy installation instructions](https://docs.scrapy.org/en/latest/intro/install.html).
 
+## Running a Local Webserver for Testing
+The tutorials in the Scrapy documenation use [http://quotes.toscrape.com/](http://quotes.toscrape.com/); however, if you want to test the crawler on pages with different structures or content, then you can follow the steps below:
+- Place the `HTML` files you want to use to test the crawler in the `server` directory
+- Execute the `server.bash` script to run the webserver included in the Python 3 virtual environment from the `server` directory.
+
 ## Running a Generic Crawler
 
 ### Using the Virtual Environment
