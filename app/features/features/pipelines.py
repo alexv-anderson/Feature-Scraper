@@ -168,14 +168,32 @@ class PageGrabPipeline(SingleItemConfigurablePipeline):
             }
         }
 
-        headers = response_meta["http"]["headers"]
-        for key in response.headers:
-            # http://book.pythontips.com/en/latest/map_filter.html
-            # https://stackoverflow.com/questions/31058055/how-do-i-convert-a-python-3-byte-string-variable-into-a-regular-string/31060836
-            headers[str(key, self._header_encoding)] = list(map(
-                lambda byte_string: str(byte_string, self._header_encoding),
-                response.headers.getlist(key)
-            ))
+        self._populate_headers(response.headers, response_meta["http"]["headers"])
         
         with open(os.path.join(item_output_dir_path, "response_meta.json"), "w+") as f:
             json.dump(response_meta, f, indent=2)
+
+        request = response.request
+        request_meta = {
+            "http": {
+                "url": request.url,
+                "method": request.method,
+                "headers": {}
+            },
+            "scrapy": {
+                "meta": request.meta
+            }
+        }
+        self._populate_headers(request.headers, request_meta["http"]["headers"])
+        with open(os.path.join(item_output_dir_path, "request_meta.json"), "w+") as f:
+            json.dump(request_meta, f, indent=2)
+    
+    def _populate_headers(self, headers, d):
+        for key in headers:
+            # http://book.pythontips.com/en/latest/map_filter.html
+            # https://stackoverflow.com/questions/31058055/how-do-i-convert-a-python-3-byte-string-variable-into-a-regular-string/31060836
+            d[str(key, self._header_encoding)] = list(map(
+                lambda byte_string: str(byte_string, self._header_encoding),
+                headers.getlist(key)
+            ))
+

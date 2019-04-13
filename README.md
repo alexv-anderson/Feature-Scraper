@@ -13,6 +13,7 @@ Scraper designed to extract features of interest from webpages.
     - [Content Extraction](#content-extraction)
     - [Custom Extraction](#custom-extraction)
     - [Page Grab](#page-grab)
+      - [Page Grab Output](#page-grab-output)
 
 ## Install/Setup
 In a Linux environment with Python 3 installed simply run `./setup.bash` and a virtual python environment will be created and launached from the `app`. If the script is giving an error or for instructions to install in a Windows environment, then please consult the [Scrapy installation instructions](https://docs.scrapy.org/en/latest/intro/install.html).
@@ -94,35 +95,66 @@ It is possible to grab the entire contents of the page. To do so, use the the `"
 
 ##### Page Grab Output
 Each page grab will have a cooresponding directory created in `"output_dir"`. To avoid problems with long directory/path names the directories will be named `0000` through `9999`. In each directory, there will be 2 files:
-- **`response_body.*`** Since the body of the response could be quite large, it is saved in its own file named either `response_body.byte`, `response_body.txt`, `response_body.html`, or `response_body.xml` depending on the format of the response received. The extension used is given in `crawler.response_extension` in `response_meta.json`.
-- **`response_meta.json`** will contain meta-data about the response which was received by the crawler _(an example is shown below)_. See the Scrapy documentation for [Response](https://docs.scrapy.org/en/latest/topics/request-response.html#response-objects) objects to see definitions for the properties in the `"http"` and `"scrapy"` objects.
-```json
-{
-  "http": {
-    "response_url": "http://127.0.0.1:8000/",
-    "status": 200,
-    "headers": {
-      "Server": [
-        "SimpleHTTP/0.6 Python/3.6.7"
-      ],
-      "Date": [
-        "Sat, 13 Apr 2019 18:42:48 GMT"
-      ],
-      "Content-Type": [
-        "text/html"
-      ],
-      "Last-Modified": [
-        "Fri, 12 Apr 2019 19:42:00 GMT"
-      ]
+- **`response_body.*`**: Since the body of the response could be quite large, it is saved in its own file named either `response_body.byte`, `response_body.txt`, `response_body.html`, or `response_body.xml` depending on the format of the response received. The extension used is given in `crawler.response_extension` in `response_meta.json`.
+- **`response_meta.json`**: Contains meta-data about the response which was received by the crawler _(an example is shown below)_. See the Scrapy documentation for [Response](https://docs.scrapy.org/en/latest/topics/request-response.html#response-objects) objects to see definitions for the properties in the `"http"` and `"scrapy"` objects.
+    ```json
+    {
+    "http": {
+        "response_url": "http://127.0.0.1:8000/",
+        "status": 200,
+        "headers": {
+        "Server": [
+            "SimpleHTTP/0.6 Python/3.6.7"
+        ],
+        "Date": [
+            "Sat, 13 Apr 2019 18:42:48 GMT"
+        ],
+        "Content-Type": [
+            "text/html"
+        ],
+        "Last-Modified": [
+            "Fri, 12 Apr 2019 19:42:00 GMT"
+        ]
+        }
+    },
+    "scrapy": {
+        "flags": [],
+        "encoding": "cp1252"
+    },
+    "crawler": {
+        "response_extension": "html",
+        "response_has_text": true
     }
-  },
-  "scrapy": {
-    "flags": [],
-    "encoding": "cp1252"
-  },
-  "crawler": {
-    "response_extension": "html",
-    "response_has_text": true
-  }
-}
-```
+    }
+    ```
+- **`request_meta.json`**: Contains meta-data about the request which was sent by the crawler _(an example is shown below)_. See the Scrapy documentation for [Request](https://docs.scrapy.org/en/latest/topics/request-response.html#request-objects) objects to see definitions for the properties in the `"http"` and `"scrapy"` objects.
+    ```json
+    {
+    "http": {
+        "url": "http://127.0.0.1:8000/",
+        "method": "GET",
+        "headers": {
+        "Accept": [
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        ],
+        "Accept-Language": [
+            "en"
+        ],
+        "User-Agent": [
+            "Scrapy/1.6.0 (+https://scrapy.org)"
+        ],
+        "Accept-Encoding": [
+            "gzip,deflate"
+        ]
+        }
+    },
+    "scrapy": {
+        "meta": {
+        "download_timeout": 180.0,
+        "download_slot": "127.0.0.1",
+        "download_latency": 0.0026607513427734375,
+        "depth": 0
+        }
+    }
+    }
+    ```
