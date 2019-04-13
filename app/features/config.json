@@ -13,6 +13,7 @@
     },
     "page_grab": {
         "enabled": true,
-        "output_dir": "./pageGrabOutput"
+        "output_dir": "./pageGrabOutput",
+        "header_encoding": "utf-8"
     }
 }

@@ -12,6 +12,8 @@ import re
 
 from features.items import ContentItem, PageGrabItem
 
+import scrapy
+
 from scrapy.exceptions import DropItem, NotConfigured
 
 class ConfigurablePipeline(object):
@@ -114,10 +116,12 @@ class PageGrabPipeline(SingleItemConfigurablePipeline):
                 logging.warn("No 'output_dir' property found for 'page_grab' using default path of %s" % self._output_dir_path)
             os.mkdir(self._output_dir_path)
         else:
+            # https://docs.scrapy.org/en/latest/topics/exceptions.html#notconfigured
             message = "Page grabbing has been disabled"
             logging.info(message)
             raise NotConfigured(message)
         
+        self._header_encoding = self._json_data["page_grab"]["header_encoding"]
         self._num_items_processed = 0
 
         
@@ -125,5 +129,53 @@ class PageGrabPipeline(SingleItemConfigurablePipeline):
     def on_item(self, item, spider):
         item_output_dir_path = os.path.join(self._output_dir_path, '{:04d}'.format(self._num_items_processed))
         os.mkdir(item_output_dir_path)
-        with open(os.path.join(item_output_dir_path, "body.html"), "w+") as f:
-            f.write(item["response"].text)
+        
+        response = item["response"]
+
+        response_has_text = False
+        response_extension = "byte"
+        if isinstance(response, scrapy.http.TextResponse):
+            response_has_text = True
+            response_extension = "txt"
+            if isinstance(response, scrapy.http.HtmlResponse):
+                response_extension = "html"
+            elif isinstance(response, scrapy.http.XmlResponse):
+                response_extension = "xml"
+        
+
+        response_body_file_name = os.path.join(item_output_dir_path, "response_body.%s" % response_extension)
+        # https://stackoverflow.com/questions/12092527/python-write-bytes-to-file
+        with open(response_body_file_name, "w+" if response_has_text else "wb+") as f:
+            if response_has_text:
+                f.write(response.text)
+            else:
+                f.write(response.body)
+
+        response_meta = {
+            "http": {
+                "response_url": response.url,
+                "status": response.status,
+                "headers": {}
+            },
+            "scrapy": {
+                "flags": response.flags,
+                "encoding": response.encoding if response_has_text else None,
+                "request_meta": response.meta
+            },
+            "crawler": {
+                "response_extension": response_extension,
+                "response_has_text": response_has_text,
+            }
+        }
+
+        headers = response_meta["http"]["headers"]
+        for key in response.headers:
+            # http://book.pythontips.com/en/latest/map_filter.html
+            # https://stackoverflow.com/questions/31058055/how-do-i-convert-a-python-3-byte-string-variable-into-a-regular-string/31060836
+            headers[str(key, self._header_encoding)] = list(map(
+                lambda byte_string: str(byte_string, self._header_encoding),
+                response.headers.getlist(key)
+            ))
+        
+        with open(os.path.join(item_output_dir_path, "response_meta.json"), "w+") as f:
+            json.dump(response_meta, f, indent=2)

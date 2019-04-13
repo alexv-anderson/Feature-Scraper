@@ -12,7 +12,7 @@ Scraper designed to extract features of interest from webpages.
   - [Controlling What is Extracted with `app/features/config.json`](#controlling-what-is-extracted-with-app/features/config.json)
     - [Content Extraction](#content-extraction)
     - [Custom Extraction](#custom-extraction)
-    - [Everything](#everything)
+    - [Page Grab](#page-grab)
 
 ## Install/Setup
 In a Linux environment with Python 3 installed simply run `./setup.bash` and a virtual python environment will be created and launached from the `app`. If the script is giving an error or for instructions to install in a Windows environment, then please consult the [Scrapy installation instructions](https://docs.scrapy.org/en/latest/intro/install.html).
@@ -77,15 +77,52 @@ Custom feature extractors can be added to the crawler for situations which can't
 - The identifier of this custom feature is `"title"` and will be used by the crawler to uniquely identify the feature during runtime and in the crawler's output.
 - The `"xpath_expr"` is an [XPath](https://docs.scrapy.org/en/latest/topics/selectors.html#working-with-xpaths) expression which is used to extract content from a page for the feature.
 
-#### Everything
+#### Page Grab
 It is possible to grab the entire contents of the page. To do so, use the the `"page_grab"` property.
 ```json
 {
     "page_grab": {
         "enabled": true,
-        "output_dir": "./pageGrabOutput"
+        "output_dir": "./pageGrabOutput",
+        "header_encoding": "utf-8"
     }
 }
 ```
 - The `"enabled"` property controls if pages are grabbed.
 - The `"output_dir"` property controls in which the pages are output.
+- The headers of the HTTP response headers are byte arrays, so the `"header_encoding"` property is used to specify what encoding should be used for the headers
+
+##### Page Grab Output
+Each page grab will have a cooresponding directory created in `"output_dir"`. To avoid problems with long directory/path names the directories will be named `0000` through `9999`. In each directory, there will be 2 files:
+- **`response_body.*`** Since the body of the response could be quite large, it is saved in its own file named either `response_body.byte`, `response_body.txt`, `response_body.html`, or `response_body.xml` depending on the format of the response received. The extension used is given in `crawler.response_extension` in `response_meta.json`.
+- **`response_meta.json`** will contain meta-data about the response which was received by the crawler _(an example is shown below)_. See the Scrapy documentation for [Response](https://docs.scrapy.org/en/latest/topics/request-response.html#response-objects) objects to see definitions for the properties in the `"http"` and `"scrapy"` objects.
+```json
+{
+  "http": {
+    "response_url": "http://127.0.0.1:8000/",
+    "status": 200,
+    "headers": {
+      "Server": [
+        "SimpleHTTP/0.6 Python/3.6.7"
+      ],
+      "Date": [
+        "Sat, 13 Apr 2019 18:42:48 GMT"
+      ],
+      "Content-Type": [
+        "text/html"
+      ],
+      "Last-Modified": [
+        "Fri, 12 Apr 2019 19:42:00 GMT"
+      ]
+    }
+  },
+  "scrapy": {
+    "flags": [],
+    "encoding": "cp1252"
+  },
+  "crawler": {
+    "response_extension": "html",
+    "response_has_text": true
+  }
+}
+```

@@ -4,6 +4,6 @@
 # Runtime environment
 app/*
 !app/features
-app/features/pageGrab/
+app/features/pageGrabOutput/
 
 *.pyc
