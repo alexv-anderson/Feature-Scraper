@@ -10,5 +10,9 @@
         "title": {
             "xpath_expr": "//title"
         }
+    },
+    "page_grab": {
+        "enabled": true,
+        "output_dir": "./pageGrabOutput"
     }
 }

@@ -7,13 +7,14 @@
 
 import json
 import logging
+import os
 import re
 
-from features.items import ContentItem
+from features.items import ContentItem, PageGrabItem
 
-from scrapy.exceptions import DropItem
+from scrapy.exceptions import DropItem, NotConfigured
 
-class FeaturePipeline(object):
+class ConfigurablePipeline(object):
     """Parent of all pipelines which work on features"""
     def __init__(self):
         """Load the configuration data so children can access filtering data"""
@@ -25,7 +26,7 @@ class FeaturePipeline(object):
         logging.log(logging.WARNING, message)
         raise DropItem(message)
 
-class SingleFeaturePipeline(FeaturePipeline):
+class SingleItemConfigurablePipeline(ConfigurablePipeline):
     """Parent of all feature pipelines which only know how to operate on one type of item"""
 
     def __init__(self, pipeline_type):
@@ -35,7 +36,7 @@ class SingleFeaturePipeline(FeaturePipeline):
         pipeline_type
             The item which the pipeline can process. Will be passed a parameter to isinstance
         """
-        FeaturePipeline.__init__(self)
+        ConfigurablePipeline.__init__(self)
         self._pipeline_type = pipeline_type
 
     def process_item(self, item, spider):
@@ -67,9 +68,9 @@ class SingleFeaturePipeline(FeaturePipeline):
         """
         pass
 
-class ContentPipeline(SingleFeaturePipeline):
+class ContentPipeline(SingleItemConfigurablePipeline):
     def __init__(self):
-        SingleFeaturePipeline.__init__(self, ContentItem)
+        SingleItemConfigurablePipeline.__init__(self, ContentItem)
 
         # Build data needed for each feature's regular expression
         self.feature_regex_data = {}
@@ -98,3 +99,31 @@ class ContentPipeline(SingleFeaturePipeline):
                 self._drop_and_log("ContentPipeline", "content SEARCH could not find match for regex %s" % item["regex"])
         else:
             self._drop_and_log("ContentPipeline", "has an incorrect mode. Expected either 'match' or 'search'.")
+
+class PageGrabPipeline(SingleItemConfigurablePipeline):
+    def __init__(self):
+        SingleItemConfigurablePipeline.__init__(self, PageGrabItem)
+
+        self._output_dir_path = "./pageGrabOutput"
+        if "enabled" in self._json_data["page_grab"] and self._json_data["page_grab"]["enabled"]:
+            if "output_dir" in self._json_data["page_grab"]:
+                self._output_dir_path = self._json_data["page_grab"]["output_dir"]
+                if not os.path.exists(self._output_dir_path) or not os.path.isdir(self._output_dir_path):
+                    logging.error("Path in 'output_dir' property the the 'page_grab' object is not a directory using default path of %s" % self._output_dir_path)
+            else:
+                logging.warn("No 'output_dir' property found for 'page_grab' using default path of %s" % self._output_dir_path)
+            os.mkdir(self._output_dir_path)
+        else:
+            message = "Page grabbing has been disabled"
+            logging.info(message)
+            raise NotConfigured(message)
+        
+        self._num_items_processed = 0
+
+        
+        
+    def on_item(self, item, spider):
+        item_output_dir_path = os.path.join(self._output_dir_path, '{:04d}'.format(self._num_items_processed))
+        os.mkdir(item_output_dir_path)
+        with open(os.path.join(item_output_dir_path, "body.html"), "w+") as f:
+            f.write(item["response"].text)
