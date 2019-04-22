@@ -128,6 +128,7 @@ class PageGrabPipeline(SingleItemConfigurablePipeline):
         
     def on_item(self, item, spider):
         item_output_dir_path = os.path.join(self._output_dir_path, '{:04d}'.format(self._num_items_processed))
+        self._num_items_processed += 1
         os.mkdir(item_output_dir_path)
         
         response = item["response"]
